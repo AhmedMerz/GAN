@@ -55,16 +55,19 @@ class Discriminator(nn.Module):
             nn.Conv2d(in_channel, 8, kernel_size=3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(8),
             nn.LeakyReLU(0.2),
+            nn.Dropout(0.2),
             
             # Feature map 2: (64x64x8) --> (32x32x16)
             nn.Conv2d(8, 16, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(16),
             nn.LeakyReLU(0.2),
+            nn.Dropout(0.2),
             
             # Feature map 3: (32x32x16) --> (16x16x32)
             nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(32),
             nn.LeakyReLU(0.2),
+            nn.Dropout(0.2),
             
             
             # Feature map 4: (16x16x32) --> (8x8x64)
@@ -77,6 +80,7 @@ class Discriminator(nn.Module):
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2),
             
+
 
             
         )
@@ -126,7 +130,7 @@ class Generator(nn.Module):
 
            # Feature map 4: (64x64x8) --> (128x128x4)
            nn.ConvTranspose2d(8, 1, kernel_size=4, stride=2, padding=1, bias=False),
-           nn.Sigmoid()
+           nn.Tanh()
            
        )
         
@@ -173,9 +177,9 @@ D_opt = torch.optim.Adam(D.parameters(), lr=0.001, betas=(0.5, 0.999))
 G_opt = torch.optim.Adam(G.parameters(), lr=0.001, betas=(0.5, 0.999))
 
 batch_size = 100
-max_epoch = 30000 # need more than 20 epochs for training generator
+max_epoch = 5000 # need more than 20 epochs for training generator
 step = 0
-n_critic = 2 # for training more k steps about Discriminator
+n_critic = 1 # for training more k steps about Discriminator
 n_noise = 100
 
 
@@ -187,6 +191,8 @@ X_train = X_train.transpose(3,2,0,1)
 tensor_train = torch.tensor(X_train, dtype=torch.float32)
 train_dataset = torch.utils.data.TensorDataset(tensor_train)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+
+
 
 for epoch in range(max_epoch):
     for idx, (images,) in enumerate(train_loader):
@@ -226,7 +232,4 @@ for epoch in range(max_epoch):
 
 
 
-
-
-
-
+Z = get_sample_image(G, n_noise)[:128,:128]
